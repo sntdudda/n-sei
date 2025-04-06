@@ -1,130 +1,194 @@
-"use client"
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  Modal,
+  Pressable,
+} from 'react-native';
 
-import { useState } from "react"
-import { StyleSheet, View, Text, TouchableOpacity, Alert } from "react-native"
+const colors = [
+  '#e74c3c', '#f1c40f', '#2ecc71',
+  '#3498db', '#9b59b6', '#1abc9c',
+  '#e67e22', '#ecf0f1', '#95a5a6',
+];
 
-export default function App() {
-  const [sequence, setSequence] = useState([])
-  const [userSequence, setUserSequence] = useState([])
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [activeSquare, setActiveSquare] = useState(null)
-  const [level, setLevel] = useState(1)
-  const [gameStarted, setGameStarted] = useState(false)
-  const [difficulty, setDifficulty] = useState("easy")
+const GeniusGame = () => {
+  const [sequence, setSequence] = useState([]);
+  const [userInput, setUserInput] = useState([]);
+  const [flashIndex, setFlashIndex] = useState(null);
+  const [isShowing, setIsShowing] = useState(false);
+  const [gameOver, setGameOver] = useState(false);
+  const [difficulty, setDifficulty] = useState('easy'); // 'easy', 'medium', 'hard'
 
-  const colors = ["#FF5252", "#FF4081", "#E040FB", "#7C4DFF", "#536DFE", "#448AFF", "#40C4FF", "#18FFFF", "#64FFDA"]
+  useEffect(() => {
+    startGame();
+  }, []);
 
-  const startGame = (selectedDifficulty) => {
-    setDifficulty(selectedDifficulty)
-    setGameStarted(true)
-    setLevel(1)
-    const firstSequence = [Math.floor(Math.random() * 9)]
-    setSequence(firstSequence)
-    setTimeout(() => playSequence(firstSequence), 1000)
-  }
-
-  const playSequence = async (currentSequence) => {
-    setIsPlaying(true)
-    setUserSequence([])
-    const flashSpeed = difficulty === "easy" ? 800 : difficulty === "medium" ? 600 : 400
-
-    for (let i = 0; i < currentSequence.length; i++) {
-      setActiveSquare(currentSequence[i])
-      await new Promise((r) => setTimeout(r, flashSpeed))
-      setActiveSquare(null)
-      await new Promise((r) => setTimeout(r, 200))
+  const getSpeed = () => {
+    switch (difficulty) {
+      case 'easy': return 1000;
+      case 'medium': return 700;
+      case 'hard': return 400;
+      default: return 1000;
     }
-    setIsPlaying(false)
-  }
+  };
 
-  const handleSquarePress = (index) => {
-    if (isPlaying || !gameStarted) return
+  const updateDifficulty = (len) => {
+    if (len < 5) setDifficulty('easy');
+    else if (len < 10) setDifficulty('medium');
+    else setDifficulty('hard');
+  };
 
-    const newUserSequence = [...userSequence, index]
-    setUserSequence(newUserSequence)
-    setActiveSquare(index)
-    setTimeout(() => setActiveSquare(null), 200)
+  const startGame = () => {
+    const first = Math.floor(Math.random() * 9);
+    const newSequence = [first];
+    updateDifficulty(newSequence.length);
+    setSequence(newSequence);
+    setUserInput([]);
+    setGameOver(false);
+    setTimeout(() => showSequence(newSequence), 500);
+  };
 
-    const step = newUserSequence.length - 1
-    if (sequence[step] !== index) {
-      Alert.alert("Game Over!", You reached level ${level}, [
-        { text: "Try Again", onPress: () => setGameStarted(false) },
-      ])
-      return
+  const showSequence = (seq) => {
+    setIsShowing(true);
+    seq.forEach((val, index) => {
+      setTimeout(() => {
+        setFlashIndex(val);
+        setTimeout(() => setFlashIndex(null), getSpeed() / 2);
+      }, index * getSpeed());
+    });
+    setTimeout(() => {
+      setIsShowing(false);
+    }, seq.length * getSpeed());
+  };
+
+  const handlePress = (index) => {
+    if (isShowing) return;
+
+    const newInput = [...userInput, index];
+    setUserInput(newInput);
+
+    if (index !== sequence[newInput.length - 1]) {
+      setGameOver(true);
+      return;
     }
 
-    if (newUserSequence.length === sequence.length) {
-      setLevel(level + 1)
-      const nextSequence = [...sequence]
-      const stepsToAdd = difficulty === "easy" ? 1 : difficulty === "medium" ? 2 : 3
-
-      for (let i = 0; i < stepsToAdd; i++) {
-        nextSequence.push(Math.floor(Math.random() * 9))
-      }
-      setSequence(nextSequence)
-      setTimeout(() => playSequence(nextSequence), 1000)
+    if (newInput.length === sequence.length) {
+      const next = Math.floor(Math.random() * 9);
+      const newSequence = [...sequence, next];
+      updateDifficulty(newSequence.length);
+      setSequence(newSequence);
+      setUserInput([]);
+      setTimeout(() => showSequence(newSequence), 1000);
     }
-  }
+  };
+
+  const renderRow = (start) => (
+    <View style={styles.row}>
+      {[0, 1, 2].map((i) => {
+        const index = start + i;
+        const isFlashing = flashIndex === index;
+        return (
+          <TouchableOpacity
+            key={index}
+            style={[
+              styles.square,
+              { backgroundColor: colors[index] },
+              isFlashing && styles.activeSquare,
+            ]}
+            onPress={() => handlePress(index)}
+            activeOpacity={0.8}
+          />
+        );
+      })}
+    </View>
+  );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Memory Game</Text>
+      {renderRow(0)}
+      {renderRow(3)}
+      {renderRow(6)}
 
-      {gameStarted ? (
-        <>
-          <Text style={styles.level}>Level: {level}</Text>
-          <View style={styles.grid}>
-            {[...Array(9)].map((_, i) => (
-              <TouchableOpacity
-                key={i}
-                style={[styles.square, { backgroundColor: activeSquare === i ? colors[i] : colors[i] + "80" }]}
-                onPress={() => handleSquarePress(i)}
-              />
-            ))}
+      <Text style={styles.levelText}>
+        Dificuldade: {difficulty.toUpperCase()} | Sequência: {sequence.length}
+      </Text>
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={gameOver}
+        onRequestClose={() => {}}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalText}>Você errou!</Text>
+            <Pressable style={styles.button} onPress={startGame}>
+              <Text style={styles.buttonText}>Recomeçar Jogo</Text>
+            </Pressable>
           </View>
-          <Text style={styles.instruction}>{isPlaying ? "Watch..." : "Repeat!"}</Text>
-        </>
-      ) : (
-        <View style={styles.menu}>
-          <Text style={styles.menuTitle}>Select Difficulty</Text>
-          {["easy", "medium", "hard"].map((diff) => (
-            <TouchableOpacity key={diff} style={styles.button} onPress={() => startGame(diff)}>
-              <Text style={styles.buttonText}>{diff.charAt(0).toUpperCase() + diff.slice(1)}</Text>
-            </TouchableOpacity>
-          ))}
         </View>
-      )}
+      </Modal>
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#222",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
+    backgroundColor: '#121212',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  title: { fontSize: 24, fontWeight: "bold", color: "white", marginBottom: 20 },
-  level: { fontSize: 20, color: "white", marginBottom: 20 },
-  grid: {
-    width: 300,
-    height: 300,
-    flexDirection: "row",
-    flexWrap: "wrap",
+  row: {
+    flexDirection: 'row',
+    marginBottom: 10,
   },
-  square: { width: 90, height: 90, margin: 5, borderRadius: 8 },
-  instruction: { fontSize: 18, color: "white", marginTop: 20 },
-  menu: { alignItems: "center" },
-  menuTitle: { fontSize: 20, color: "white", marginBottom: 20 },
+  square: {
+    width: 100,
+    height: 100,
+    margin: 5,
+    borderRadius: 10,
+  },
+  activeSquare: {
+    opacity: 0.3,
+    borderWidth: 3,
+    borderColor: '#ffffff',
+  },
+  levelText: {
+    marginTop: 30,
+    fontSize: 18,
+    color: '#ffffff',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#000000aa',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#1e1e1e',
+    padding: 30,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalText: {
+    fontSize: 24,
+    color: 'white',
+    marginBottom: 20,
+  },
   button: {
-    backgroundColor: "#3f51b5",
-    padding: 15,
+    backgroundColor: '#f44336',
+    paddingVertical: 10,
+    paddingHorizontal: 25,
     borderRadius: 8,
-    marginVertical: 10,
-    width: 200,
-    alignItems: "center",
   },
-  buttonText: { color: "white", fontSize: 16, fontWeight: "bold" },
-})  
+  buttonText: {
+    color: 'white',
+    fontSize: 18,
+  },
+});
+
+export default GeniusGame;
