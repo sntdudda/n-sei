@@ -1,38 +1,30 @@
-Jogo da Memória (Genius Game)
 
-Um jogo simples de memória estilo "Genius" desenvolvido com React Native, onde o jogador deve repetir uma sequência de luzes coloridas.
+O Jogo "Gênios":
+Oque é
+O jogo "Gênios"
+é um jogo de memória onde o jogador precisa repetir uma sequência de cores que o computador mostra. A sequência fica cada vez mais longa e rápida, desafiando a memória do jogador.
 
-Como o Jogo Funciona
+Como o Código Funciona:
+1.  Início:
+    O jogo começa com uma sequência curta de cores piscando.
+    O jogador tenta repetir a sequência clicando nos quadrados coloridos.
 
-Conceito Básico
+2.  Sequência e Dificuldade:
+    A cada rodada correta, a sequência aumenta e a velocidade das cores piscando aumenta, tornando o jogo mais difícil.
+    A dificuldade (fácil, médio, difícil) muda automaticamente conforme o jogador avança.
 
-O jogo consiste em uma grade 3x3 de quadrados coloridos que piscam em uma sequência aleatória. O jogador deve memorizar e repetir essa sequência na ordem correta.
+3.  **Erros e Recomeço:**
+Se o jogador errar a sequência, uma mensagem de "Você errou!" aparece.
+ O jogo recomeça do início.
 
-Níveis de Dificuldade
+4.  Interface:
+    O jogo é uma grade de 3x3 quadrados coloridos.
+     Um modal informa quando o jogador erra.
+     A dificuldade e o tamanho da sequência são exibidos na tela.
 
-O jogo possui três níveis de dificuldade:
+Tecnicamente:
 
-Fácil: Começa com 2 passos na sequência e velocidade mais lenta
-Médio: Começa com 3 passos na sequência e velocidade média
-Difícil: Começa com 4 passos na sequência e velocidade mais rápida
-Como Jogar
-
-Selecione um nível de dificuldade na tela inicial
-Observe atentamente a sequência de quadrados que piscam
-Quando a mensagem "Repita a sequência!" aparecer, toque nos quadrados na mesma ordem que eles piscaram
-Se você acertar a sequência completa, um novo quadrado será adicionado à sequência
-Se você errar, receberá uma mensagem de erro e o nível será reiniciado
-Sua pontuação aumenta cada vez que você completa uma sequência corretamente
-Implementação
-
-Este jogo foi implementado usando:
-
-React Native para a interface do usuário
-Hooks do React (useState, useEffect) para gerenciamento de estado
-Componentes TouchableOpacity para os quadrados interativos
-Estilização simples com StyleSheet
-Como Executar o Jogo
-
-Certifique-se de ter o ambiente React Native configurado
-Clone este repositório
-Instale as dependências:
+ O código usa "useState" para lembrar a sequência e a entrada do jogador.
+ "useEffect" inicia o jogo.
+"setTimeout" faz as cores piscarem.
+ O estilo do app é feito com "StyleSheet".
