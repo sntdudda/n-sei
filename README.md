@@ -1,131 +1,38 @@
-# n-sei
-use client"
+Jogo da Memória (Genius Game)
 
-import { useState } from "react"
-import { StyleSheet, View, Text, TouchableOpacity, Alert } from "react-native"
+Um jogo simples de memória estilo "Genius" desenvolvido com React Native, onde o jogador deve repetir uma sequência de luzes coloridas.
 
-export default function App() {
-  const [sequence, setSequence] = useState([])
-  const [userSequence, setUserSequence] = useState([])
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [activeSquare, setActiveSquare] = useState(null)
-  const [level, setLevel] = useState(1)
-  const [gameStarted, setGameStarted] = useState(false)
-  const [difficulty, setDifficulty] = useState("easy")
+Como o Jogo Funciona
 
-  const colors = ["#FF5252", "#FF4081", "#E040FB", "#7C4DFF", "#536DFE", "#448AFF", "#40C4FF", "#18FFFF", "#64FFDA"]
+Conceito Básico
 
-  const startGame = (selectedDifficulty) => {
-    setDifficulty(selectedDifficulty)
-    setGameStarted(true)
-    setLevel(1)
-    const firstSequence = [Math.floor(Math.random() * 9)]
-    setSequence(firstSequence)
-    setTimeout(() => playSequence(firstSequence), 1000)
-  }
+O jogo consiste em uma grade 3x3 de quadrados coloridos que piscam em uma sequência aleatória. O jogador deve memorizar e repetir essa sequência na ordem correta.
 
-  const playSequence = async (currentSequence) => {
-    setIsPlaying(true)
-    setUserSequence([])
-    const flashSpeed = difficulty === "easy" ? 800 : difficulty === "medium" ? 600 : 400
+Níveis de Dificuldade
 
-    for (let i = 0; i < currentSequence.length; i++) {
-      setActiveSquare(currentSequence[i])
-      await new Promise((r) => setTimeout(r, flashSpeed))
-      setActiveSquare(null)
-      await new Promise((r) => setTimeout(r, 200))
-    }
-    setIsPlaying(false)
-  }
+O jogo possui três níveis de dificuldade:
 
-  const handleSquarePress = (index) => {
-    if (isPlaying || !gameStarted) return
+Fácil: Começa com 2 passos na sequência e velocidade mais lenta
+Médio: Começa com 3 passos na sequência e velocidade média
+Difícil: Começa com 4 passos na sequência e velocidade mais rápida
+Como Jogar
 
-    const newUserSequence = [...userSequence, index]
-    setUserSequence(newUserSequence)
-    setActiveSquare(index)
-    setTimeout(() => setActiveSquare(null), 200)
+Selecione um nível de dificuldade na tela inicial
+Observe atentamente a sequência de quadrados que piscam
+Quando a mensagem "Repita a sequência!" aparecer, toque nos quadrados na mesma ordem que eles piscaram
+Se você acertar a sequência completa, um novo quadrado será adicionado à sequência
+Se você errar, receberá uma mensagem de erro e o nível será reiniciado
+Sua pontuação aumenta cada vez que você completa uma sequência corretamente
+Implementação
 
-    const step = newUserSequence.length - 1
-    if (sequence[step] !== index) {
-      Alert.alert("Game Over!", You reached level ${level}, [
-        { text: "Try Again", onPress: () => setGameStarted(false) },
-      ])
-      return
-    }
+Este jogo foi implementado usando:
 
-    if (newUserSequence.length === sequence.length) {
-      setLevel(level + 1)
-      const nextSequence = [...sequence]
-      const stepsToAdd = difficulty === "easy" ? 1 : difficulty === "medium" ? 2 : 3
+React Native para a interface do usuário
+Hooks do React (useState, useEffect) para gerenciamento de estado
+Componentes TouchableOpacity para os quadrados interativos
+Estilização simples com StyleSheet
+Como Executar o Jogo
 
-      for (let i = 0; i < stepsToAdd; i++) {
-        nextSequence.push(Math.floor(Math.random() * 9))
-      }
-      setSequence(nextSequence)
-      setTimeout(() => playSequence(nextSequence), 1000)
-    }
-  }
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Memory Game</Text>
-
-      {gameStarted ? (
-        <>
-          <Text style={styles.level}>Level: {level}</Text>
-          <View style={styles.grid}>
-            {[...Array(9)].map((_, i) => (
-              <TouchableOpacity
-                key={i}
-                style={[styles.square, { backgroundColor: activeSquare === i ? colors[i] : colors[i] + "80" }]}
-                onPress={() => handleSquarePress(i)}
-              />
-            ))}
-          </View>
-          <Text style={styles.instruction}>{isPlaying ? "Watch..." : "Repeat!"}</Text>
-        </>
-      ) : (
-        <View style={styles.menu}>
-          <Text style={styles.menuTitle}>Select Difficulty</Text>
-          {["easy", "medium", "hard"].map((diff) => (
-            <TouchableOpacity key={diff} style={styles.button} onPress={() => startGame(diff)}>
-              <Text style={styles.buttonText}>{diff.charAt(0).toUpperCase() + diff.slice(1)}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
-    </View>
-  )
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#222",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
-  },
-  title: { fontSize: 24, fontWeight: "bold", color: "white", marginBottom: 20 },
-  level: { fontSize: 20, color: "white", marginBottom: 20 },
-  grid: {
-    width: 300,
-    height: 300,
-    flexDirection: "row",
-    flexWrap: "wrap",
-  },
-  square: { width: 90, height: 90, margin: 5, borderRadius: 8 },
-  instruction: { fontSize: 18, color: "white", marginTop: 20 },
-  menu: { alignItems: "center" },
-  menuTitle: { fontSize: 20, color: "white", marginBottom: 20 },
-  button: {
-    backgroundColor: "#3f51b5",
-    padding: 15,
-    borderRadius: 8,
-    marginVertical: 10,
-    width: 200,
-    alignItems: "center",
-  },
-  buttonText: { color: "white", fontSize: 16, fontWeight: "bold" },
-})
+Certifique-se de ter o ambiente React Native configurado
+Clone este repositório
+Instale as dependências:
